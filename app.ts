@@ -101,34 +101,32 @@ function getScore(probabilities: object, letters: string[], chromosome: Chromoso
   }
 }
 
-function mutateChromosome(chromosome: Chromosome): Chromosome {
-  let firstLetter = getRandomInt(0, chromosome.length)
-  let secondLetter = getRandomInt(0, chromosome.length)
-  let newChromosome = [...chromosome]
-  let buffer = newChromosome[firstLetter]
-  newChromosome[firstLetter] = newChromosome[secondLetter]
-  newChromosome[secondLetter] = buffer
-  return newChromosome
-}
-
 function mutateIfBetter(letters: string[], probabilities: object, encoded: string, chromosome: Chromosome) {
-  let newChromosome = mutateChromosome(chromosome)
 
-  let newScored = getScore(probabilities, letters, newChromosome, encoded)
   let oldScored = getScore(probabilities, letters, chromosome, encoded)
 
-  if (newScored.score >= oldScored.score) {
-    return {
-      chromosome: newChromosome,
-      score: newScored.score,
-      attempt: newScored.attempt
+  for (let firstLetter = 0; firstLetter < chromosome.length; firstLetter++) {
+    for (let secondLetter = 0; secondLetter < chromosome.length; secondLetter++) {
+      let newChromosome = [...chromosome]
+      let buffer = newChromosome[firstLetter]
+      newChromosome[firstLetter] = newChromosome[secondLetter]
+      newChromosome[secondLetter] = buffer
+
+      let newScored = getScore(probabilities, letters, newChromosome, encoded)
+      if (newScored.score > oldScored.score) {
+        return {
+          chromosome: newChromosome,
+          score: newScored.score,
+          attempt: newScored.attempt
+        }
+      }
     }
-  } else {
-    return {
-      chromosome: chromosome,
-      score: oldScored.score,
-      attempt: oldScored.attempt
-    }
+  }
+
+  return {
+    chromosome: chromosome,
+    score: oldScored.score,
+    attempt: oldScored.attempt
   }
 }
 
