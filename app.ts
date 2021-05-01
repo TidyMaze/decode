@@ -1,6 +1,4 @@
 import * as fs from 'fs'
-import { randomInt } from 'node:crypto'
-import { encode } from 'node:punycode'
 
 function print(v: any) {
   console.log(v)
