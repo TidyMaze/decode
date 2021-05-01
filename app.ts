@@ -120,7 +120,7 @@ function main() {
 
   let probabilities = analyzeLanguage(letters, cleaned)
   let extract = extractText(cleaned, textTake)
-  print('raw text = ' + extract + ' ' + ((extract.length / cleaned.length) * 100).toFixed(1) + '%')
+  print('raw text = ' + shorten(extract) + ' ' + ((extract.length / cleaned.length) * 100).toFixed(1) + '%')
 
   let dict = randomDict(letters)
   print('dict = ' + dict)
