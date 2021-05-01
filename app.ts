@@ -103,6 +103,16 @@ function getScore(probabilities: object, letters: string[], chromosome: String[]
   }
 }
 
+function mutateChromosome(chromosome: string[]): string[] {
+  let firstLetter = getRandomInt(0, chromosome.length)
+  let secondLetter = getRandomInt(0, chromosome.length)
+  let newChromosome = [...chromosome]
+  let buffer = newChromosome[firstLetter]
+  newChromosome[firstLetter] = newChromosome[secondLetter]
+  newChromosome[secondLetter] = buffer
+  return newChromosome
+}
+
 function main() {
   let textTake = 1000
   let cleaned = cleanBook(readBook('alice.txt'))
@@ -131,14 +141,7 @@ function main() {
     let scored = []
 
     population.forEach(chromosome => {
-      let firstLetter = getRandomInt(0, 27)
-      let secondLetter = getRandomInt(0, 27)
-
-      let newChromosome = [...chromosome]
-
-      let buffer = newChromosome[firstLetter]
-      newChromosome[firstLetter] = newChromosome[secondLetter]
-      newChromosome[secondLetter] = buffer
+      let newChromosome = mutateChromosome(chromosome)
 
       let newScored = getScore(probabilities, letters, newChromosome, encoded)
       let oldScored = getScore(probabilities, letters, chromosome, encoded)
