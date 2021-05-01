@@ -1,5 +1,8 @@
 import * as fs from 'fs'
 
+type Chromosome = string[]
+type Book = string
+
 function print(v: any) {
   console.log(v)
 }
@@ -8,14 +11,14 @@ function readBook(path: string): string {
   return fs.readFileSync(path).toString()
 }
 
-function cleanBook(text: string): string {
+function cleanBook(text: Book): Book {
   return text
     .replace(/[^0-9a-z \n]/gi, '')
     .replace(/\s+/gi, ' ')
     .toLowerCase()
 }
 
-function analyzeLanguage(letters: string[], book: string): object {
+function analyzeLanguage(letters: string[], book: Book): object {
   let stats = {}
 
   for (let i = 0; i < book.length - 1; i++) {
@@ -48,7 +51,7 @@ function analyzeLanguage(letters: string[], book: string): object {
   return probabilities
 }
 
-function extractText(book: string, textTake: number): string {
+function extractText(book: Book, textTake: number): string {
   return book.slice(book.length / 2 - textTake, book.length / 2 + textTake)
 }
 
@@ -58,7 +61,7 @@ function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-function randomDict(letters: string[]): String[] {
+function randomDict(letters: string[]): string[] {
   let dict = []
   let remaining = [...letters]
   for (let i = 0; i < 27; i++) {
@@ -69,7 +72,7 @@ function randomDict(letters: string[]): String[] {
   return dict
 }
 
-function applyDict(letters: string[], dict: String[], text: String) {
+function applyDict(letters: string[], dict: string[], text: String) {
   return text.split('').map(c => dict[letters.indexOf(c)]).join('')
 }
 
@@ -88,7 +91,7 @@ function getAttemptScore(probabilities: object, attempt: String) {
   return score / (attempt.length - 1)
 }
 
-function getScore(probabilities: object, letters: string[], chromosome: String[], encoded: String): { score: number, attempt: string } {
+function getScore(probabilities: object, letters: string[], chromosome: Chromosome, encoded: String): { score: number, attempt: string } {
   let attempt = applyDict(letters, chromosome, encoded)
   let score = getAttemptScore(probabilities, attempt)
 
@@ -98,7 +101,7 @@ function getScore(probabilities: object, letters: string[], chromosome: String[]
   }
 }
 
-function mutateChromosome(chromosome: string[]): string[] {
+function mutateChromosome(chromosome: Chromosome): Chromosome {
   let firstLetter = getRandomInt(0, chromosome.length)
   let secondLetter = getRandomInt(0, chromosome.length)
   let newChromosome = [...chromosome]
@@ -108,7 +111,7 @@ function mutateChromosome(chromosome: string[]): string[] {
   return newChromosome
 }
 
-function mutateIfBetter(letters: string[], probabilities: object, encoded: string, chromosome: string[]) {
+function mutateIfBetter(letters: string[], probabilities: object, encoded: string, chromosome: Chromosome) {
   let newChromosome = mutateChromosome(chromosome)
 
   let newScored = getScore(probabilities, letters, newChromosome, encoded)
@@ -146,7 +149,7 @@ function main() {
   let encoded = applyDict(letters, dict, extract)
   print('encoded text = ' + shorten(encoded))
 
-  let population = []
+  let population: Chromosome[] = []
   for (let iPop = 0; iPop < 10; iPop++) {
     population.push(randomDict(letters))
   }
