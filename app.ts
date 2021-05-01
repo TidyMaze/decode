@@ -70,11 +70,7 @@ function randomDict(letters: string[]): String[] {
 }
 
 function applyDict(letters: string[], dict: String[], text: String) {
-  let encoded = ""
-  for (let i = 0; i < text.length; i++) {
-    encoded = encoded + dict[letters.indexOf(text[i])]
-  }
-  return encoded
+  return text.split('').map(c => dict[letters.indexOf(c)]).join('')
 }
 
 function shorten(str: String): String {
@@ -89,8 +85,7 @@ function getAttemptScore(probabilities: object, attempt: String) {
     score += probabilities[letter][nextLetter]
   }
 
-  let avgScore = score / (attempt.length - 1)
-  return avgScore
+  return score / (attempt.length - 1)
 }
 
 function getScore(probabilities: object, letters: string[], chromosome: String[], encoded: String): { score: number, attempt: string } {
@@ -113,6 +108,27 @@ function mutateChromosome(chromosome: string[]): string[] {
   return newChromosome
 }
 
+function mutateIfBetter(letters: string[], probabilities: object, encoded: string, chromosome: string[]) {
+  let newChromosome = mutateChromosome(chromosome)
+
+  let newScored = getScore(probabilities, letters, newChromosome, encoded)
+  let oldScored = getScore(probabilities, letters, chromosome, encoded)
+
+  if (newScored.score >= oldScored.score) {
+    return {
+      chromosome: newChromosome,
+      score: newScored.score,
+      attempt: newScored.attempt
+    }
+  } else {
+    return {
+      chromosome: chromosome,
+      score: oldScored.score,
+      attempt: oldScored.attempt
+    }
+  }
+}
+
 function main() {
   let textTake = 1000
   let cleaned = cleanBook(readBook('alice.txt'))
@@ -121,6 +137,8 @@ function main() {
   let probabilities = analyzeLanguage(letters, cleaned)
   let extract = extractText(cleaned, textTake)
   print('raw text = ' + shorten(extract) + ' ' + ((extract.length / cleaned.length) * 100).toFixed(1) + '%')
+
+  let perfectScore = getAttemptScore(probabilities, extract)
 
   let dict = randomDict(letters)
   print('dict = ' + dict)
@@ -134,42 +152,16 @@ function main() {
   }
 
   let bestScore = 0
-  let perfectScore = getAttemptScore(probabilities, extract)
 
   for (let generation = 0; generation < 1000000; generation++) {
-    let newPopulation = []
-    let scored = []
-
-    population.forEach(chromosome => {
-      let newChromosome = mutateChromosome(chromosome)
-
-      let newScored = getScore(probabilities, letters, newChromosome, encoded)
-      let oldScored = getScore(probabilities, letters, chromosome, encoded)
-
-      if (newScored.score >= oldScored.score) {
-        scored.push({
-          chromosome: newChromosome,
-          score: newScored.score,
-          attempt: newScored.attempt
-        })
-      } else {
-        scored.push({
-          chromosome: chromosome,
-          score: oldScored.score,
-          attempt: oldScored.attempt
-        })
-      }
-    });
-
-    scored.sort((a, b) => b.score - a.score)
+    let scored = population.map(chromosome => mutateIfBetter(letters, probabilities, encoded, chromosome)).sort((a, b) => b.score - a.score)
 
     if (scored[0].score > bestScore) {
       print("Gen " + generation + " best chromosome " + scored[0].chromosome + ' => ' + shorten(scored[0].attempt) + ' score = ' + scored[0].score.toFixed(3) + ' vs perfect ' + perfectScore.toFixed(3))
       bestScore = scored[0].score
     }
-    scored.forEach(el => newPopulation.push(el.chromosome))
 
-    population = newPopulation
+    population = scored.map(e => e.chromosome)
   }
 }
 
